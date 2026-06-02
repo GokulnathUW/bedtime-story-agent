@@ -1,0 +1,22 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	plot_writer(plot_writer)
+	plot_judge(plot_judge)
+	story_writer(story_writer)
+	story_judge(story_judge)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> plot_writer;
+	plot_judge -.-> plot_writer;
+	plot_judge -.-> story_writer;
+	plot_writer --> plot_judge;
+	story_judge -.-> __end__;
+	story_judge -.-> story_writer;
+	story_writer --> story_judge;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
