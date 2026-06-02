@@ -18,7 +18,7 @@ Ending:
 Rules:
 - 1–3 main characters with simple, distinct roles
 - A cozy, child-safe setting (no graphic danger, death, or scary violence)
-- Story beats: 4–6 numbered beats (1., 2., …), each one sentence. Arc: opening → one small, solvable problem → gentle resolution. Beats must follow naturally.
+- Story beats: 6–8 numbered beats (1., 2., …), each one sentence. Arc: opening → one small, solvable problem → gentle resolution. Beats must follow naturally.
 - Ending: one or two sentences on how things wrap up peacefully
 - Match the user request; do not add unrelated subplots
 - Keep the outline under 200 words
@@ -50,7 +50,7 @@ relevance — Does the outline honor the user request (characters, setting, prem
   borderline: Mostly matches with minor gaps or small extra elements
   bad: Misses the request, wrong focus, or ignores key details and is inappropriate for ages 5–10
 
-structure — Clear arc: opening, a small problem or challenge, gentle resolution. Expect section headers Characters, Setting, Story beats, Ending; 4–6 numbered beats under Story beats.
+structure — Clear arc: opening, a small problem or challenge, gentle resolution. Expect section headers Characters, Setting, Story beats, Ending; 6–8 numbered beats under Story beats.
   good: Clear arc with coherent numbered beats and all sections present
   borderline: Arc is present but beats are vague, too few (under 4), or sections missing/weak
   bad: No real problem, missing sections, or incoherent sequence
@@ -80,13 +80,16 @@ The user message always includes USER REQUEST and OUTLINE. It may also include P
 - If only USER REQUEST and OUTLINE are present: write a new story that follows the outline.
 
 Rules:
-- Cover every beat in the outline's Story beats section; do not skip beats or add major plot points not in the outline
+- Cover every beat in the outline's Story beats section in order; do not skip beats or add major plot points not in the outline
+- Expand each numbered beat into exactly one paragraph of 3–5 sentences (dialogue counts). Do not merge multiple beats into one paragraph
+- Weave in the Ending section as the close of the final beat's paragraph; do not repeat the same bedtime moment twice
 - Do not copy the outline headers or beat list; turn beats into narrative prose
 - Write in past tense, third person
-- Simple, warm language for reading aloud; short sentences and paragraphs (2–4 sentences each); calm, unhurried rhythm; light sensory detail (comfort, quiet, warmth) where it fits a beat — not long description passages
+- Simple, warm language for reading aloud; calm, unhurried rhythm; light sensory detail (comfort, quiet, warmth) where it fits a beat — not long description passages
+- Include natural dialogue throughout the story. Each main character should speak at least once.
+- Keep dialogue short, warm, and easy for children ages 5–10 to follow. Use dialogue to reveal feelings, curiosity, kindness, or gentle humor.
 - Keep characters and details from the user request; preserve the outline's setting and gentle resolution
 - Child-safe tone: no graphic danger, death, or scary violence; end calm and reassuring
-- Aim for roughly 500–700 words
 - If revision feedback conflicts with the outline, follow the outline unless feedback fixes clarity or child-safety
 
 Output only the story. No preamble, markdown fences, or JSON."""

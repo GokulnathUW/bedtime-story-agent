@@ -27,6 +27,11 @@ def main() -> int:
         default="",
         help="Optional description for this prompt commit",
     )
+    parser.add_argument(
+        "--commit-tags",
+        default="",
+        help="Comma-separated tags for this commit (e.g. v2,story-writer,dialogue)",
+    )
     args = parser.parse_args()
 
     from langchain_core.prompts import ChatPromptTemplate
@@ -40,6 +45,7 @@ def main() -> int:
         return 1
 
     client = Client(api_key=LANGSMITH_API_KEY)
+    commit_tags = [t.strip() for t in args.commit_tags.split(",") if t.strip()] or None
 
     for name in SYSTEM_PROMPTS:
         content: str = getattr(templates, name)
@@ -53,6 +59,7 @@ def main() -> int:
             identifier,
             object=prompt,
             commit_description=args.commit_description or None,
+            commit_tags=commit_tags,
         )
         print(f"Pushed {identifier} -> {url}")
 
