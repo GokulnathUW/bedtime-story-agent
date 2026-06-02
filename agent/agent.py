@@ -1,10 +1,12 @@
 import logging
 
 from langgraph.graph import END, START, StateGraph
+from langsmith import traceable
 
 from agent.nodes import plot_judge, plot_writer, story_judge, story_writer
 from agent.state import StoryState
 from bedtime_story_agent.settings import MAX_PLOT_REVISIONS, MAX_STORY_REVISIONS
+from bedtime_story_agent.tracing import configure_langsmith
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +55,10 @@ def compile_graph():
     return build_graph().compile()
 
 
+@traceable(name="bedtime_story_agent", run_type="chain")
 def run_story(request: str) -> StoryState:
     """Run the full pipeline for one user request."""
+    configure_langsmith()
     graph = compile_graph()
     initial = StoryState(request=request)
     final = graph.invoke(initial)

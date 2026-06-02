@@ -29,7 +29,9 @@ name = "bedtime-story-agent"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "langchain-core" },
     { name = "langgraph" },
+    { name = "langsmith" },
     { name = "openai" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -37,7 +39,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "langchain-core", specifier = ">=0.3.0" },
     { name = "langgraph", specifier = ">=0.2.60" },
+    { name = "langsmith", specifier = ">=0.2.0" },
     { name = "openai", specifier = ">=1.52.0" },
     { name = "pydantic", specifier = ">=2.9.0" },
     { name = "python-dotenv", specifier = ">=1.0.1" },

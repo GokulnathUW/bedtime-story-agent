@@ -7,14 +7,14 @@ import argparse
 import base64
 import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 from urllib.error import URLError
 from urllib.request import urlopen
 
-ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT_DIR = ROOT / "docs"
-
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
 
 def _write_png_via_mermaid_ink(mermaid: str, png_path: Path) -> None:

@@ -1,4 +1,5 @@
 import logging
+from functools import lru_cache
 
 from openai import OpenAI, OpenAIError
 
@@ -8,21 +9,24 @@ from bedtime_story_agent.settings import (
     MODEL_NAME,
     OPENAI_API_KEY,
 )
+from bedtime_story_agent.tracing import configure_langsmith, langsmith_enabled
 
 logger = logging.getLogger(__name__)
 
-_client: OpenAI | None = None
 
-
+@lru_cache(maxsize=1)
 def _get_client() -> OpenAI | None:
-    global _client
-    if _client is not None:
-        return _client
     if not OPENAI_API_KEY:
         logger.error("OPENAI_API_KEY is not set")
         return None
-    _client = OpenAI(api_key=OPENAI_API_KEY)
-    return _client
+
+    configure_langsmith()
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    if langsmith_enabled():
+        from langsmith.wrappers import wrap_openai
+
+        return wrap_openai(client)
+    return client
 
 
 def call_model(

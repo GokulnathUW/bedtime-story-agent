@@ -2,6 +2,7 @@ import json
 import logging
 from typing import Any, TypeVar
 
+from langsmith import traceable
 from pydantic import BaseModel, ValidationError
 
 from agent.state import PlotJudgeResult, StoryJudgeResult, StoryState
@@ -11,13 +12,6 @@ from prompts import templates
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
-
-
-def _format_prompt(name: str, **kwargs: str) -> str:
-    template: str = getattr(templates, name)
-    if not template.strip():
-        raise ValueError(f"Fill in prompts.templates.{name} before running the agent")
-    return template.format(**kwargs)
 
 
 def _call_judge(
@@ -38,6 +32,7 @@ def _call_judge(
     return None
 
 
+@traceable(name="plot_writer", run_type="chain", metadata={"system_prompt": "plot_writer_system"})
 def plot_writer(state: StoryState) -> dict[str, Any]:
     is_revision = state.plot is not None and state.plot_feedback is not None
     user_prompt = templates.format_plot_writer_user(
@@ -56,6 +51,7 @@ def plot_writer(state: StoryState) -> dict[str, Any]:
     return updates
 
 
+@traceable(name="plot_judge", run_type="chain", metadata={"system_prompt": "plot_judge_system"})
 def plot_judge(state: StoryState) -> dict[str, Any]:
     if not state.plot:
         logger.error("plot_judge: no plot in state")
@@ -79,6 +75,7 @@ def plot_judge(state: StoryState) -> dict[str, Any]:
     }
 
 
+@traceable(name="story_writer", run_type="chain", metadata={"system_prompt": "story_writer_system"})
 def story_writer(state: StoryState) -> dict[str, Any]:
     if not state.plot:
         logger.error("story_writer: no plot in state")
@@ -102,6 +99,7 @@ def story_writer(state: StoryState) -> dict[str, Any]:
     return updates
 
 
+@traceable(name="story_judge", run_type="chain", metadata={"system_prompt": "story_judge_system"})
 def story_judge(state: StoryState) -> dict[str, Any]:
     if not state.story:
         logger.error("story_judge: no story in state")
