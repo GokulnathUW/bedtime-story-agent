@@ -28,6 +28,7 @@ def _get_client() -> OpenAI | None:
 def call_model(
     prompt: str,
     *,
+    system: str | None = None,
     max_tokens: int = DEFAULT_MAX_TOKENS,
     temperature: float = DEFAULT_TEMPERATURE,
     json_mode: bool = False,
@@ -37,9 +38,14 @@ def call_model(
     if client is None:
         return None
 
+    messages: list[dict[str, str]] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
     kwargs: dict = {
         "model": MODEL_NAME,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "max_tokens": max_tokens,
         "temperature": temperature,
     }

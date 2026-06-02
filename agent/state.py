@@ -10,24 +10,42 @@ def dimensions_pass(*ratings: Rating) -> bool:
     return all(r != "bad" for r in ratings)
 
 
-class PlotJudgeResult(BaseModel):
-    reasoning: str
+class PlotReasoning(BaseModel):
+    relevance: str
+    structure: str
+
+
+class PlotScores(BaseModel):
     relevance: Rating
     structure: Rating
+
+
+class PlotJudgeResult(BaseModel):
+    reasoning: PlotReasoning
+    scores: PlotScores
     feedback: str
 
     def passed(self) -> bool:
-        return dimensions_pass(self.relevance, self.structure)
+        return dimensions_pass(self.scores.relevance, self.scores.structure)
+
+
+class StoryReasoning(BaseModel):
+    age_appropriate: str
+    engagement: str
+
+
+class StoryScores(BaseModel):
+    age_appropriate: Rating
+    engagement: Rating
 
 
 class StoryJudgeResult(BaseModel):
-    reasoning: str
-    age_appropriate: Rating
-    engagement: Rating
+    reasoning: StoryReasoning
+    scores: StoryScores
     feedback: str
 
     def passed(self) -> bool:
-        return dimensions_pass(self.age_appropriate, self.engagement)
+        return dimensions_pass(self.scores.age_appropriate, self.scores.engagement)
 
 
 class StoryState(BaseModel):

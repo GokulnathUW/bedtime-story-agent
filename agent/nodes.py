@@ -20,10 +20,15 @@ def _format_prompt(name: str, **kwargs: str) -> str:
     return template.format(**kwargs)
 
 
-def _call_judge(prompt: str, result_type: type[T]) -> T | None:
+def _call_judge(
+    user_prompt: str,
+    result_type: type[T],
+    *,
+    system: str | None = None,
+) -> T | None:
     """JSON mode + Pydantic validation; one retry on parse/validation failure."""
     for attempt in range(2):
-        raw = call_model(prompt, json_mode=True)
+        raw = call_model(user_prompt, system=system, json_mode=True)
         if raw is None:
             return None
         try:
@@ -35,13 +40,12 @@ def _call_judge(prompt: str, result_type: type[T]) -> T | None:
 
 def plot_writer(state: StoryState) -> dict[str, Any]:
     is_revision = state.plot is not None and state.plot_feedback is not None
-    prompt = _format_prompt(
-        "plot_writer",
-        request=state.request,
-        plot=state.plot or "",
-        plot_feedback=state.plot_feedback or "",
+    user_prompt = templates.format_plot_writer_user(
+        state.request,
+        plot=state.plot,
+        plot_feedback=state.plot_feedback,
     )
-    outline = call_model(prompt)
+    outline = call_model(user_prompt, system=templates.plot_writer_system)
     if outline is None:
         logger.error("plot_writer: model call failed")
         return {}
@@ -57,20 +61,16 @@ def plot_judge(state: StoryState) -> dict[str, Any]:
         logger.error("plot_judge: no plot in state")
         return {"plot_passed": False}
 
-    prompt = _format_prompt(
-        "plot_judge",
-        request=state.request,
-        plot=state.plot,
-    )
-    result = _call_judge(prompt, PlotJudgeResult)
+    user_prompt = templates.format_plot_judge_user(state.request, state.plot)
+    result = _call_judge(user_prompt, PlotJudgeResult, system=templates.plot_judge_system)
     if result is None:
         logger.error("plot_judge: could not parse judge response")
         return {"plot_passed": False}
 
     logger.info(
         "plot_judge: relevance=%s structure=%s passed=%s",
-        result.relevance,
-        result.structure,
+        result.scores.relevance,
+        result.scores.structure,
         result.passed(),
     )
     return {
@@ -85,14 +85,13 @@ def story_writer(state: StoryState) -> dict[str, Any]:
         return {}
 
     is_revision = state.story is not None and state.story_feedback is not None
-    prompt = _format_prompt(
-        "story_writer",
-        request=state.request,
-        plot=state.plot,
-        story=state.story or "",
-        story_feedback=state.story_feedback or "",
+    user_prompt = templates.format_story_writer_user(
+        state.request,
+        state.plot,
+        story=state.story,
+        story_feedback=state.story_feedback,
     )
-    prose = call_model(prompt)
+    prose = call_model(user_prompt, system=templates.story_writer_system)
     if prose is None:
         logger.error("story_writer: model call failed")
         return {}
@@ -108,21 +107,20 @@ def story_judge(state: StoryState) -> dict[str, Any]:
         logger.error("story_judge: no story in state")
         return {"story_passed": False}
 
-    prompt = _format_prompt(
-        "story_judge",
-        request=state.request,
-        plot=state.plot or "",
-        story=state.story,
+    user_prompt = templates.format_story_judge_user(
+        state.request,
+        state.plot or "",
+        state.story,
     )
-    result = _call_judge(prompt, StoryJudgeResult)
+    result = _call_judge(user_prompt, StoryJudgeResult, system=templates.story_judge_system)
     if result is None:
         logger.error("story_judge: could not parse judge response")
         return {"story_passed": False}
 
     logger.info(
         "story_judge: age_appropriate=%s engagement=%s passed=%s",
-        result.age_appropriate,
-        result.engagement,
+        result.scores.age_appropriate,
+        result.scores.engagement,
         result.passed(),
     )
     return {
