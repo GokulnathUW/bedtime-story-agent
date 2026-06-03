@@ -8,6 +8,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 """
 Before submitting the assignment, describe here in a few sentences what you would have built next if you spent 2 more hours on this project:
 
+The most exciting extension would be a choose-your-own-adventure mode inspired by the Goosebumps gamebook series I used to read as a kid: grow the plot-writer into a branching outliner that generates multiple decision paths with convergent safe endings, letting the child co-author the story beat by beat. Architecturally this is a natural next step — the plot-writer already produces a structured outline, so adding branching decision points is incremental rather than a rewrite, and the existing judge loops could validate each branch independently.
 """
 
 
