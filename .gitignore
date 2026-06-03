@@ -5,6 +5,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+eval_results/
+nltk_data/
 .mypy_cache/
 .ruff_cache/
 dist/

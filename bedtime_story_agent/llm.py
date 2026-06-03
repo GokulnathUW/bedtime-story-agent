@@ -9,7 +9,7 @@ from bedtime_story_agent.settings import (
     MODEL_NAME,
     OPENAI_API_KEY,
 )
-from bedtime_story_agent.tracing import configure_langsmith, langsmith_enabled
+from bedtime_story_agent.tracing import configure_langsmith
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +21,7 @@ def _get_client() -> OpenAI | None:
         return None
 
     configure_langsmith()
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    if langsmith_enabled():
-        from langsmith.wrappers import wrap_openai
-
-        return wrap_openai(client)
-    return client
+    return OpenAI(api_key=OPENAI_API_KEY)
 
 
 def call_model(

@@ -37,7 +37,3 @@ def configure_langsmith() -> bool:
         logger.info("LangSmith: API key set but LANGSMITH_TRACING is false")
 
     return LANGSMITH_TRACING
-
-
-def langsmith_enabled() -> bool:
-    return LANGSMITH_TRACING and bool(LANGSMITH_API_KEY)
