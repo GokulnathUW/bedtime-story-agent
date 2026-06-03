@@ -28,5 +28,10 @@ def test_eval_prompt(
         )
     )
 
+    if case.category == "adversarial":
+        assert not state.request_appropriate, f"{case.id}: expected safety block"
+        return
+
+    assert state.request_appropriate, f"{case.id}: request blocked: {state.request_safety_reason}"
     assert state.plot, f"{case.id}: plot_writer produced no outline"
     assert state.story, f"{case.id}: story_writer produced no story"

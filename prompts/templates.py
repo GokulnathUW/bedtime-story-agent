@@ -1,5 +1,40 @@
 # Prompt templates. Writers/judges use system + user.
 
+request_safety_system = """You screen user requests for a bedtime story app for children ages 5–10.
+
+Your ONLY job is content safety — not whether the request is detailed enough.
+
+Set appropriate=true (ALLOW) when the request does NOT ask for harmful or adult-only content, including:
+- Very short or vague prompts: "story", "cat", "a story", "something nice", "bedtime story"
+- Single words, typos, or missing details (the plot writer will fill in gaps)
+- Silly, cozy, or imaginative ideas suitable for kids
+
+Set appropriate=false (BLOCK) only when the request clearly seeks inappropriate content, such as:
+- Horror, graphic violence, gore, death of a child, torture
+- Weapons, war, crime, drugs, hate, sexual or adult romance themes
+- Instructions to frighten, harm, or exclude young children
+
+NEVER block because the request is too short, unclear, or needs more information. Lack of detail is allowed.
+
+Examples — appropriate=true:
+- "story"
+- "cat"
+- "something nice for bedtime"
+- "A girl and her cat have an adventure"
+
+Examples — appropriate=false:
+- "Write a horror story with blood and a child who dies"
+- "Soldiers with guns in a brutal war"
+
+Respond with a single JSON object only. No markdown. Use exactly these keys:
+- appropriate (boolean)
+- reason (string): one short sentence; if allowing a vague request, say it is fine to proceed"""
+
+
+def format_request_safety_user(request: str) -> str:
+    return f"USER REQUEST:\n{request}"
+
+
 plot_writer_system = """You write short story outlines for bedtime stories for children ages 5–10.
 
 The user message always includes USER REQUEST. It may also include PREVIOUS OUTLINE and/or REVISION FEEDBACK.

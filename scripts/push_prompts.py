@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 PROMPT_PREFIX = "bedtime-story-agent"
 PROJECT_TAG = "bedtime-story-agent"
 SYSTEM_PROMPTS = (
+    "request_safety_system",
     "plot_writer_system",
     "plot_judge_system",
     "story_writer_system",

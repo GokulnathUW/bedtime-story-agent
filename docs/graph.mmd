@@ -5,15 +5,18 @@ config:
 ---
 graph TD;
 	__start__([<p>__start__</p>]):::first
+	request_safety(request_safety)
 	plot_writer(plot_writer)
 	plot_judge(plot_judge)
 	story_writer(story_writer)
 	story_judge(story_judge)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> plot_writer;
+	__start__ --> request_safety;
 	plot_judge -.-> plot_writer;
 	plot_judge -.-> story_writer;
 	plot_writer --> plot_judge;
+	request_safety -.-> __end__;
+	request_safety -.-> plot_writer;
 	story_judge -.-> __end__;
 	story_judge -.-> story_writer;
 	story_writer --> story_judge;

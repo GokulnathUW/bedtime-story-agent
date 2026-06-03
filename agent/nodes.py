@@ -5,7 +5,7 @@ from typing import Any, TypeVar
 from langsmith import traceable
 from pydantic import BaseModel, ValidationError
 
-from agent.state import PlotJudgeResult, StoryJudgeResult, StoryState
+from agent.state import PlotJudgeResult, RequestSafetyResult, StoryJudgeResult, StoryState
 from bedtime_story_agent.llm import call_model
 from prompts import templates
 from prompts.scaffold import strip_story_scaffolds
@@ -31,6 +31,24 @@ def _call_judge(
         except (json.JSONDecodeError, ValidationError) as e:
             logger.warning("Judge parse failed (%s, attempt %d): %s", result_type.__name__, attempt + 1, e)
     return None
+
+
+@traceable(name="request_safety", run_type="chain", metadata={"system_prompt": "request_safety_system"})
+def request_safety(state: StoryState) -> dict[str, Any]:
+    user_prompt = templates.format_request_safety_user(state.request)
+    result = _call_judge(user_prompt, RequestSafetyResult, system=templates.request_safety_system)
+    if result is None:
+        logger.error("request_safety: could not parse response")
+        return {
+            "request_appropriate": False,
+            "request_safety_reason": "We could not check your request. Please try again.",
+        }
+
+    logger.info("request_safety: appropriate=%s", result.appropriate)
+    return {
+        "request_appropriate": result.appropriate,
+        "request_safety_reason": result.reason,
+    }
 
 
 @traceable(name="plot_writer", run_type="chain", metadata={"system_prompt": "plot_writer_system"})
@@ -73,6 +91,9 @@ def plot_judge(state: StoryState) -> dict[str, Any]:
     return {
         "plot_feedback": result.feedback,
         "plot_passed": result.passed(),
+        # debug fields — visible in LangSmith, not written to state
+        "_plot_reasoning": result.reasoning.model_dump(),
+        "_plot_scores": result.scores.model_dump(),
     }
 
 

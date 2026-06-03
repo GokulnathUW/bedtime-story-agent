@@ -24,6 +24,8 @@ def build_eval_record(
         "id": case_id,
         "category": category,
         "request": request,
+        "request_appropriate": state.request_appropriate,
+        "request_safety_reason": state.request_safety_reason,
         "plot_passed": state.plot_passed,
         "story_passed": state.story_passed,
         "words": story_word_count(state.story or ""),
@@ -35,6 +37,7 @@ def build_eval_record(
 
 
 def format_eval_line(state: StoryState, request: str) -> str:
+    safe_ok = "✓" if state.request_appropriate else "✗"
     plot_ok = "✓" if state.plot_passed else "✗"
     story_ok = "✓" if state.story_passed else "✗"
     words = story_word_count(state.story or "")
@@ -44,7 +47,7 @@ def format_eval_line(state: StoryState, request: str) -> str:
     if len(preview) > 60:
         preview = preview[:57] + "..."
     return (
-        f"plot={plot_ok}  story={story_ok}  words={words}  "
+        f"safe={safe_ok}  plot={plot_ok}  story={story_ok}  words={words}  "
         f"grade={grade:.1f}  revisions={revisions}  {preview}"
     )
 

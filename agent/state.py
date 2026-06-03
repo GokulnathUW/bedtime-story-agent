@@ -5,6 +5,11 @@ from pydantic import BaseModel, Field
 Rating = Literal["good", "borderline", "bad"]
 
 
+class RequestSafetyResult(BaseModel):
+    appropriate: bool
+    reason: str
+
+
 def dimensions_pass(*ratings: Rating) -> bool:
     """Pass when no dimension is bad (borderline is OK)."""
     return all(r != "bad" for r in ratings)
@@ -50,6 +55,8 @@ class StoryJudgeResult(BaseModel):
 
 class StoryState(BaseModel):
     request: str
+    request_appropriate: bool = False
+    request_safety_reason: str | None = None
     plot: str | None = None
     plot_feedback: str | None = None
     plot_passed: bool = False
