@@ -35,7 +35,7 @@ def format_plot_writer_user(
     if plot:
         parts.append(f"PREVIOUS OUTLINE:\n{plot}")
     if plot_feedback:
-        parts.append(f"REVISION FEEDBACK:\n{plot_feedback}")
+        parts.append(f"REVISION FEEDBACK:\n{plot_feedback}")  # set on judge fail / revision loop
     return "\n\n".join(parts)
 
 
@@ -120,7 +120,7 @@ def format_story_writer_user(
     if story:
         parts.append(f"PREVIOUS STORY:\n{story}")
     if story_feedback:
-        parts.append(f"REVISION FEEDBACK:\n{story_feedback}")
+        parts.append(f"REVISION FEEDBACK:\n{story_feedback}")  # set on judge fail / revision loop
     return "\n\n".join(parts)
 
 

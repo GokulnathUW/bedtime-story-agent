@@ -20,7 +20,7 @@ def _get_client() -> OpenAI | None:
         logger.error("OPENAI_API_KEY is not set")
         return None
 
-    configure_langsmith()
+    configure_langsmith()  # env vars for @traceable spans when tracing is on
     return OpenAI(api_key=OPENAI_API_KEY)
 
 

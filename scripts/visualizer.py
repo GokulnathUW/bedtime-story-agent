@@ -1,32 +1,26 @@
 #!/usr/bin/env python3
-"""Export the compiled story agent graph to Mermaid (.mmd) and PNG."""
-
 from __future__ import annotations
 
 import argparse
 import base64
 import sys
 from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from urllib.error import URLError
-from urllib.request import urlopen
 
 DEFAULT_OUT_DIR = ROOT / "docs"
 
 
 def _write_png_via_mermaid_ink(mermaid: str, png_path: Path) -> None:
-    """Fallback when langgraph's draw_mermaid_png API is unavailable or times out."""
     encoded = base64.urlsafe_b64encode(mermaid.encode("utf-8")).decode("ascii")
     encoded += "=" * ((4 - len(encoded) % 4) % 4)
     url = f"https://mermaid.ink/img/{encoded}?type=png&bgColor=white"
-    try:
-        with urlopen(url, timeout=30) as resp:
-            png_path.write_bytes(resp.read())
-    except URLError as e:
-        raise RuntimeError(f"mermaid.ink render failed: {e}") from e
+    with urlopen(url, timeout=30) as resp:
+        png_path.write_bytes(resp.read())
 
 
 def _write_png(drawable, mermaid: str, png_path: Path) -> None:
@@ -38,6 +32,7 @@ def _write_png(drawable, mermaid: str, png_path: Path) -> None:
     try:
         result = draw_png()
     except TypeError:
+        # Older LangGraph: writes via output_file_path
         draw_png(output_file_path=str(png_path))
         if png_path.exists():
             return
@@ -45,21 +40,13 @@ def _write_png(drawable, mermaid: str, png_path: Path) -> None:
 
     if isinstance(result, (bytes, bytearray)):
         png_path.write_bytes(result)
-        return
-    if png_path.exists():
-        return
-
-    _write_png_via_mermaid_ink(mermaid, png_path)
+    elif not png_path.exists():
+        _write_png_via_mermaid_ink(mermaid, png_path)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate Mermaid and PNG from the story agent graph.")
-    parser.add_argument(
-        "--out-dir",
-        type=Path,
-        default=DEFAULT_OUT_DIR,
-        help=f"Output directory (default: {DEFAULT_OUT_DIR})",
-    )
+    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     args = parser.parse_args()
 
     from agent.agent import compile_graph
@@ -78,7 +65,7 @@ def main() -> int:
 
     try:
         _write_png(drawable, mermaid, png_path)
-    except Exception as e:
+    except (URLError, OSError, RuntimeError) as e:
         print(f"PNG export failed: {e}", file=sys.stderr)
         print(f"Mermaid source is still at {mmd_path}", file=sys.stderr)
         return 1

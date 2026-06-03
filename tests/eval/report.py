@@ -1,5 +1,3 @@
-"""Format eval harness output and write JSON results."""
-
 from __future__ import annotations
 
 import json
@@ -10,7 +8,6 @@ from typing import Any
 from agent.state import StoryState
 from bedtime_story_agent.metrics import story_flesch_kincaid_grade, story_word_count
 
-# Repo root: tests/eval/report.py -> tests/eval -> tests -> repo
 EVAL_RESULTS_PATH = (
     Path(__file__).resolve().parent.parent.parent / "eval_results" / "eval_results.json"
 )
@@ -23,7 +20,6 @@ def build_eval_record(
     request: str,
     state: StoryState,
 ) -> dict[str, Any]:
-    """One eval run as a JSON-serializable dict."""
     return {
         "id": case_id,
         "category": category,
@@ -54,7 +50,6 @@ def format_eval_line(state: StoryState, request: str) -> str:
 
 
 def write_eval_results(path: Path, records: list[dict[str, Any]]) -> Path:
-    """Write accumulated eval records to JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "run_at": datetime.now(UTC).isoformat(),

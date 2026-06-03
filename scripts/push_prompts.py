@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Push system prompts from prompts/templates.py to the LangSmith Prompt Hub."""
-
 from __future__ import annotations
 
 import argparse
@@ -11,7 +9,6 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-# Hub name prefix (use hyphens, not slashes — "foo/bar" is treated as tenant/prompt).
 PROMPT_PREFIX = "bedtime-story-agent"
 PROJECT_TAG = "bedtime-story-agent"
 SYSTEM_PROMPTS = (
@@ -23,21 +20,17 @@ SYSTEM_PROMPTS = (
 
 
 def _escape_braces_for_hub(text: str) -> str:
-    """ChatPromptTemplate treats { } as variables; double them for literal JSON examples."""
+    # ChatPromptTemplate treats { } as variables; double them for literal JSON in judge prompts
     return text.replace("{", "{{").replace("}", "}}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Version prompts in LangSmith Hub.")
-    parser.add_argument(
-        "--commit-description",
-        default="",
-        help="Optional description for this prompt commit",
-    )
+    parser.add_argument("--commit-description", default="")
     parser.add_argument(
         "--commit-tags",
         default="",
-        help="Comma-separated tags for this commit (e.g. v2,story-writer,dialogue)",
+        help="Comma-separated tags (e.g. v2,story-writer)",
     )
     args = parser.parse_args()
 
@@ -56,7 +49,6 @@ def main() -> int:
     commit_tags = [t.strip() for t in args.commit_tags.split(",") if t.strip()]
     if PROJECT_TAG not in commit_tags:
         commit_tags.insert(0, PROJECT_TAG)
-    commit_tags_arg = commit_tags or None
 
     for name in SYSTEM_PROMPTS:
         content: str = getattr(templates, name)
@@ -71,7 +63,7 @@ def main() -> int:
                 identifier,
                 object=prompt,
                 commit_description=args.commit_description or None,
-                commit_tags=commit_tags_arg,
+                commit_tags=commit_tags or None,
             )
         except LangSmithConflictError:
             print(f"Skipped {identifier}: unchanged since latest commit")

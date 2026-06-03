@@ -29,11 +29,10 @@ def configure_langsmith() -> bool:
     if LANGSMITH_ENDPOINT:
         os.environ["LANGSMITH_ENDPOINT"] = LANGSMITH_ENDPOINT
 
+    os.environ["LANGSMITH_TRACING"] = "true" if LANGSMITH_TRACING else "false"
     if LANGSMITH_TRACING:
-        os.environ["LANGSMITH_TRACING"] = "true"
         logger.info("LangSmith: tracing enabled (project=%s)", LANGSMITH_PROJECT)
     else:
-        os.environ["LANGSMITH_TRACING"] = "false"
         logger.info("LangSmith: API key set but LANGSMITH_TRACING is false")
 
     return LANGSMITH_TRACING

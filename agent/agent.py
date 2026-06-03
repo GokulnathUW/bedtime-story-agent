@@ -1,5 +1,3 @@
-import logging
-
 from langgraph.graph import END, START, StateGraph
 from langsmith import traceable
 
@@ -8,10 +6,9 @@ from agent.state import StoryState
 from bedtime_story_agent.settings import MAX_PLOT_REVISIONS, MAX_STORY_REVISIONS
 from bedtime_story_agent.tracing import configure_langsmith
 
-logger = logging.getLogger(__name__)
-
 
 def route_after_plot_judge(state: StoryState) -> str:
+    # Cap revisions, then advance even if the judge still wants edits
     if state.plot_passed or state.plot_revisions >= MAX_PLOT_REVISIONS:
         return "story_writer"
     return "plot_writer"
@@ -41,7 +38,7 @@ def build_graph() -> StateGraph:
     )
 
     builder.add_edge("story_writer", "story_judge")
-
+    
     builder.add_conditional_edges(
         "story_judge",
         route_after_story_judge,
@@ -57,11 +54,10 @@ def compile_graph():
 
 @traceable(name="bedtime_story_agent", run_type="chain")
 def run_story(request: str) -> StoryState:
-    """Run the full pipeline for one user request."""
     configure_langsmith()
     graph = compile_graph()
-    initial = StoryState(request=request)
-    final = graph.invoke(initial)
+    final = graph.invoke(StoryState(request=request))
+    # LangGraph may return a dict; normalize to StoryState
     if isinstance(final, StoryState):
         return final
     return StoryState.model_validate(final)

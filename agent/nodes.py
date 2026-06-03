@@ -21,7 +21,7 @@ def _call_judge(
     *,
     system: str | None = None,
 ) -> T | None:
-    """JSON mode + Pydantic validation; one retry on parse/validation failure."""
+    # One retry when the model returns invalid JSON for a judge
     for attempt in range(2):
         raw = call_model(user_prompt, system=system, json_mode=True)
         if raw is None:
@@ -35,7 +35,7 @@ def _call_judge(
 
 @traceable(name="plot_writer", run_type="chain", metadata={"system_prompt": "plot_writer_system"})
 def plot_writer(state: StoryState) -> dict[str, Any]:
-    is_revision = state.plot is not None and state.plot_feedback is not None
+    revising = state.plot is not None and state.plot_feedback is not None
     user_prompt = templates.format_plot_writer_user(
         state.request,
         plot=state.plot,
@@ -47,7 +47,7 @@ def plot_writer(state: StoryState) -> dict[str, Any]:
         return {}
 
     updates: dict[str, Any] = {"plot": outline.strip()}
-    if is_revision:
+    if revising:
         updates["plot_revisions"] = state.plot_revisions + 1
     return updates
 
@@ -82,7 +82,7 @@ def story_writer(state: StoryState) -> dict[str, Any]:
         logger.error("story_writer: no plot in state")
         return {}
 
-    is_revision = state.story is not None and state.story_feedback is not None
+    revising = state.story is not None and state.story_feedback is not None
     user_prompt = templates.format_story_writer_user(
         state.request,
         state.plot,
@@ -94,8 +94,8 @@ def story_writer(state: StoryState) -> dict[str, Any]:
         logger.error("story_writer: model call failed")
         return {}
 
-    updates: dict[str, Any] = {"story": strip_story_scaffolds(prose)}
-    if is_revision:
+    updates: dict[str, Any] = {"story": strip_story_scaffolds(prose)}  # drop [Beat]/[S] tags
+    if revising:
         updates["story_revisions"] = state.story_revisions + 1
     return updates
 
