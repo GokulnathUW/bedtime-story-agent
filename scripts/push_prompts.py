@@ -11,13 +11,20 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# Hub name prefix (use hyphens, not slashes — "foo/bar" is treated as tenant/prompt).
 PROMPT_PREFIX = "bedtime-story-agent"
+PROJECT_TAG = "bedtime-story-agent"
 SYSTEM_PROMPTS = (
     "plot_writer_system",
     "plot_judge_system",
     "story_writer_system",
     "story_judge_system",
 )
+
+
+def _escape_braces_for_hub(text: str) -> str:
+    """ChatPromptTemplate treats { } as variables; double them for literal JSON examples."""
+    return text.replace("{", "{{").replace("}", "}}")
 
 
 def main() -> int:
@@ -36,6 +43,7 @@ def main() -> int:
 
     from langchain_core.prompts import ChatPromptTemplate
     from langsmith import Client
+    from langsmith.utils import LangSmithConflictError
 
     from bedtime_story_agent.settings import LANGSMITH_API_KEY
     from prompts import templates
@@ -45,7 +53,10 @@ def main() -> int:
         return 1
 
     client = Client(api_key=LANGSMITH_API_KEY)
-    commit_tags = [t.strip() for t in args.commit_tags.split(",") if t.strip()] or None
+    commit_tags = [t.strip() for t in args.commit_tags.split(",") if t.strip()]
+    if PROJECT_TAG not in commit_tags:
+        commit_tags.insert(0, PROJECT_TAG)
+    commit_tags_arg = commit_tags or None
 
     for name in SYSTEM_PROMPTS:
         content: str = getattr(templates, name)
@@ -53,14 +64,18 @@ def main() -> int:
             print(f"Skip {name}: empty", file=sys.stderr)
             continue
 
-        prompt = ChatPromptTemplate.from_messages([("system", content)])
-        identifier = f"{PROMPT_PREFIX}/{name}"
-        url = client.push_prompt(
-            identifier,
-            object=prompt,
-            commit_description=args.commit_description or None,
-            commit_tags=commit_tags,
-        )
+        prompt = ChatPromptTemplate.from_messages([("system", _escape_braces_for_hub(content))])
+        identifier = f"{PROMPT_PREFIX}-{name}"
+        try:
+            url = client.push_prompt(
+                identifier,
+                object=prompt,
+                commit_description=args.commit_description or None,
+                commit_tags=commit_tags_arg,
+            )
+        except LangSmithConflictError:
+            print(f"Skipped {identifier}: unchanged since latest commit")
+            continue
         print(f"Pushed {identifier} -> {url}")
 
     print("Done. Open LangSmith → Prompts to compare commits.")

@@ -1,3 +1,4 @@
+from prompts.scaffold import strip_story_scaffolds
 from prompts.templates import (
     format_plot_judge_user,
     format_plot_writer_user,
@@ -18,4 +19,5 @@ __all__ = [
     "plot_writer_system",
     "story_judge_system",
     "story_writer_system",
+    "strip_story_scaffolds",
 ]

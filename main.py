@@ -14,12 +14,16 @@ Before submitting the assignment, describe here in a few sentences what you woul
 
 def main() -> None:
     configure_langsmith()
-    user_input = input("What kind of story do you want to hear? ")
+    # user_input = input("What kind of story do you want to hear? ")
+    user_input = "A story about a girl named Alice and her best friend Bob, who happens to be a cat."
     final = run_story(user_input)
     if not final.story:
         print("Sorry, something went wrong generating your story. Please try again.", file=sys.stderr)
         sys.exit(1)
+        
+    print("Your story:")
     print(final.story)
+    print("--------------------------------")
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ Ending:
 Rules:
 - 1–3 main characters with simple, distinct roles
 - A cozy, child-safe setting (no graphic danger, death, or scary violence)
-- Story beats: 6–8 numbered beats (1., 2., …), each one sentence. Arc: opening → one small, solvable problem → gentle resolution. Beats must follow naturally.
+- Story beats: 6-8 numbered beats (1., 2., …), each one sentence. Arc: opening → one small, solvable problem → gentle resolution. Beats must follow naturally.
 - Ending: one or two sentences on how things wrap up peacefully
 - Match the user request; do not add unrelated subplots
 - Keep the outline under 200 words
@@ -72,28 +72,43 @@ def format_plot_judge_user(request: str, plot: str) -> str:
     return f"USER REQUEST:\n{request}\n\nOUTLINE:\n{plot}"
 
 
-story_writer_system = """You write bedtime story prose for children ages 5–10.
+story_writer_system = """You write bedtime story prose for children ages 5–10. You act as an iterative narrative weaver, expanding an outline beat-by-beat into an immersive story.
 
 The user message always includes USER REQUEST and OUTLINE. It may also include PREVIOUS STORY and/or REVISION FEEDBACK.
 
-- If REVISION FEEDBACK is present: revise PREVIOUS STORY to address every feedback point while keeping what already works. Stay faithful to the user request and OUTLINE.
-- If only USER REQUEST and OUTLINE are present: write a new story that follows the outline.
+- If REVISION FEEDBACK is present: revise PREVIOUS STORY to address every feedback point while keeping what already works. Stay faithful to the USER REQUEST and OUTLINE. If feedback conflicts with the OUTLINE, follow the OUTLINE unless the fix is about clarity or child-safety.
+- If no REVISION FEEDBACK: write a fresh story from the OUTLINE.
+
+[EXECUTION METHOD]
+Count the numbered beats in the outline. You will write exactly that many paragraphs.
+
+For each beat, in order:
+1. Write [Beat N: <exact beat text from the outline>] on its own line.
+2. Write [S1] followed by the first sentence of this beat's paragraph.
+3. Continue: [S2], [S3], [S4], [S5], [S6], [S7] — one label per line, each a new sentence.
+   You must reach [S7] before moving to the next beat.
+4. If the beat needs more depth, continue to [S8] or [S9].
+5. Do not begin [Beat N+1] until this beat has [S7].
+
+Each [S] sentence must be rich — never a bare action alone. Weave in
+sensory detail, character feeling, or a small observed moment alongside
+the action.
+
+Rich:  [S1] Bob squeezed himself into the narrow gap behind the
+       bookshelf, his whiskers brushing the dusty wood as his purr
+       faded to a small, nervous mew.
+
+Never: [S1] Bob hid behind the bookshelf.
+
+Stitch all paragraphs together. The [Beat N] and [S] labels will be stripped before delivery — write only prose under each label.
 
 Rules:
-- Cover every beat in the outline's Story beats section in order; do not skip beats or add major plot points not in the outline
-- Expand each numbered beat into exactly one paragraph of 3–5 sentences (dialogue counts). Do not merge multiple beats into one paragraph
-- Weave in the Ending section as the close of the final beat's paragraph; do not repeat the same bedtime moment twice
-- Do not copy the outline headers or beat list; turn beats into narrative prose
-- Write in past tense, third person
-- Simple, warm language for reading aloud; calm, unhurried rhythm; light sensory detail (comfort, quiet, warmth) where it fits a beat — not long description passages
-- Include natural dialogue throughout the story. Each main character should speak at least once.
-- Keep dialogue short, warm, and easy for children ages 5–10 to follow. Use dialogue to reveal feelings, curiosity, kindness, or gentle humor.
-- Keep characters and details from the user request; preserve the outline's setting and gentle resolution
-- Child-safe tone: no graphic danger, death, or scary violence; end calm and reassuring
-- If revision feedback conflicts with the outline, follow the outline unless feedback fixes clarity or child-safety
-
-Output only the story. No preamble, markdown fences, or JSON."""
-
+- NATURAL DIALOGUE: Every main character must speak out loud at least once. Dialogue must be short, warm, and reveal feelings, curiosity, or gentle humor. Integrate dialogue naturally within each paragraph.
+- ENDING INTEGRATION: Weave the Ending section naturally into the very last sentences of the final beat's paragraph. Do not create a standalone ending paragraph.
+- CHILD-SAFE TONE: No graphic danger, death, or scary violence. End calm and reassuring.
+- Past tense, third person only.
+- Aim for 700–900 words total.
+- Output ONLY the final stitched story prose. No preamble, no markdown fences, no headers, and no JSON."""
 
 def format_story_writer_user(
     request: str,

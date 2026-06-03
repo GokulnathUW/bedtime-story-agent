@@ -8,6 +8,7 @@ from pydantic import BaseModel, ValidationError
 from agent.state import PlotJudgeResult, StoryJudgeResult, StoryState
 from bedtime_story_agent.llm import call_model
 from prompts import templates
+from prompts.scaffold import strip_story_scaffolds
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ def story_writer(state: StoryState) -> dict[str, Any]:
         logger.error("story_writer: model call failed")
         return {}
 
-    updates: dict[str, Any] = {"story": prose.strip()}
+    updates: dict[str, Any] = {"story": strip_story_scaffolds(prose)}
     if is_revision:
         updates["story_revisions"] = state.story_revisions + 1
     return updates
